@@ -37,7 +37,6 @@ int main(int argc, char * argv[]) {
 
     unsigned short servPort = atoi(argv[1]); // First arg:  local port
 
-    namedWindow("recv", CV_WINDOW_AUTOSIZE);
     try {
         UDPSocket sock(servPort);
 
@@ -48,6 +47,7 @@ int main(int argc, char * argv[]) {
 
         clock_t last_cycle = clock();
 
+        namedWindow("recv", CV_WINDOW_AUTOSIZE);
         while (1) {
             // Block until receive message from a client
             do {
@@ -55,7 +55,7 @@ int main(int argc, char * argv[]) {
             } while (recvMsgSize > sizeof(int));
             int total_pack = ((int * ) buffer)[0];
 
-            cout << "expecting length of packs:" << total_pack << endl;
+            //cout << "expecting length of packs:" << total_pack << endl;
             char * longbuf = new char[PACK_SIZE * total_pack];
             for (int i = 0; i < total_pack; i++) {
                 recvMsgSize = sock.recvFrom(buffer, BUF_LEN, sourceAddress, sourcePort);
@@ -66,7 +66,7 @@ int main(int argc, char * argv[]) {
                 memcpy( & longbuf[i * PACK_SIZE], buffer, PACK_SIZE);
             }
 
-            cout << "Received packet from " << sourceAddress << ":" << sourcePort << endl;
+            //cout << "Received packet from " << sourceAddress << ":" << sourcePort << endl;
  
             Mat rawData = Mat(1, PACK_SIZE * total_pack, CV_8UC1, longbuf);
             Mat frame = imdecode(rawData, CV_LOAD_IMAGE_COLOR);
@@ -80,7 +80,7 @@ int main(int argc, char * argv[]) {
             waitKey(1);
             clock_t next_cycle = clock();
             double duration = (next_cycle - last_cycle) / (double) CLOCKS_PER_SEC;
-            cout << "\teffective FPS:" << (1 / duration) << " \tkbps:" << (PACK_SIZE * total_pack / duration / 1024 * 8) << endl;
+            //cout << "\teffective FPS:" << (1 / duration) << " \tkbps:" << (PACK_SIZE * total_pack / duration / 1024 * 8) << endl;
 
             cout << next_cycle - last_cycle;
             last_cycle = next_cycle;

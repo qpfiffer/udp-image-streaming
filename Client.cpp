@@ -43,9 +43,10 @@ int main(int argc, char * argv[]) {
         int jpegqual =  ENCODE_QUALITY; // Compression Parameter
 
         Mat frame, send;
+        Mat channels[3];
         vector < uchar > encoded;
         VideoCapture cap(0); // Grab the camera
-        namedWindow("send", CV_WINDOW_AUTOSIZE);
+        //namedWindow("send", CV_WINDOW_AUTOSIZE);
         if (!cap.isOpened()) {
             cerr << "OpenCV Failed to open camera";
             exit(1);
@@ -55,13 +56,20 @@ int main(int argc, char * argv[]) {
         while (1) {
             cap >> frame;
             if(frame.size().width==0)continue;//simple integrity check; skip erroneous data...
+
+            // Split, zero out Blue and then remerge.
+            split(frame, channels);
+            channels[0] = Mat::zeros(frame.rows, frame.cols, CV_8UC1);
+            channels[1] = Mat::zeros(frame.rows, frame.cols, CV_8UC1);
+            merge(channels, 3, frame);
+
             resize(frame, send, Size(FRAME_WIDTH, FRAME_HEIGHT), 0, 0, INTER_LINEAR);
             vector < int > compression_params;
             compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
             compression_params.push_back(jpegqual);
 
             imencode(".jpg", send, encoded, compression_params);
-            imshow("send", send);
+            //imshow("send", send);
             int total_pack = 1 + (encoded.size() - 1) / PACK_SIZE;
 
             int ibuf[1];
